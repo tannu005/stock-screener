@@ -4,9 +4,10 @@ import { useEffect, useRef } from 'react';
 
 export default function CursorTrail() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const trailRef = useRef<{ x: number; y: number; opacity: number; size: number }[]>([]);
+  const trailRef = useRef<{ x: number; y: number; opacity: number; size: number; color: string }[]>([]);
   const mouseRef = useRef({ x: 0, y: 0 });
   const rafRef = useRef<number>(0);
+  const colorRef = useRef<string>('rgba(0, 212, 255, 0.8)');
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -24,39 +25,65 @@ export default function CursorTrail() {
 
     const handleMouseMove = (e: MouseEvent) => {
       mouseRef.current = { x: e.clientX, y: e.clientY };
-      trailRef.current.push({
-        x: e.clientX,
-        y: e.clientY,
-        opacity: 1,
-        size: 4 + Math.random() * 4,
-      });
-      if (trailRef.current.length > 40) {
+
+      // Vary color based on mouse position for premium effect
+      const hue = (e.clientX / window.innerWidth) * 60 + 180; // Cyan to purple range
+      const colors = [
+        'rgba(0, 212, 255, 0.7)',  // Plasma
+        'rgba(139, 92, 246, 0.7)', // Violet
+        'rgba(0, 255, 136, 0.5)',  // Aurora
+      ];
+      const colorIndex = Math.floor((e.clientX / window.innerWidth) * colors.length);
+      colorRef.current = colors[colorIndex] || colors[0];
+
+      // Add multiple trail points for smoother effect
+      for (let i = 0; i < 2; i++) {
+        trailRef.current.push({
+          x: e.clientX,
+          y: e.clientY,
+          opacity: 1 - (i * 0.3),
+          size: 3 + Math.random() * 3,
+          color: colorRef.current,
+        });
+      }
+
+      if (trailRef.current.length > 80) {
         trailRef.current.shift();
       }
     };
 
     const animate = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      // Clear with fade effect for smoother trails
+      ctx.fillStyle = 'rgba(10, 14, 39, 0.1)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
 
       trailRef.current.forEach((point, i) => {
         const progress = i / trailRef.current.length;
         const size = point.size * progress;
-        const opacity = point.opacity * progress * 0.6;
+        const opacity = point.opacity * progress * 0.8;
 
-        const gradient = ctx.createRadialGradient(point.x, point.y, 0, point.x, point.y, size * 3);
-        gradient.addColorStop(0, `rgba(0, 212, 255, ${opacity})`);
-        gradient.addColorStop(0.5, `rgba(139, 92, 246, ${opacity * 0.5})`);
+        // Create premium glowing effect
+        const gradient = ctx.createRadialGradient(point.x, point.y, 0, point.x, point.y, size * 4);
+        gradient.addColorStop(0, point.color.replace('0.7', (opacity * 0.9).toString()).replace('0.5', (opacity * 0.7).toString()));
+        gradient.addColorStop(0.5, point.color.replace('0.7', (opacity * 0.4).toString()).replace('0.5', (opacity * 0.3).toString()));
         gradient.addColorStop(1, 'transparent');
 
         ctx.beginPath();
-        ctx.arc(point.x, point.y, size * 3, 0, Math.PI * 2);
+        ctx.arc(point.x, point.y, size * 4, 0, Math.PI * 2);
         ctx.fillStyle = gradient;
         ctx.fill();
+
+        // Add outer glow
+        ctx.strokeStyle = point.color.replace('0.7', (opacity * 0.3).toString()).replace('0.5', (opacity * 0.15).toString());
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.arc(point.x, point.y, size * 5, 0, Math.PI * 2);
+        ctx.stroke();
       });
 
       // Fade trail
       trailRef.current = trailRef.current
-        .map(p => ({ ...p, opacity: p.opacity * 0.95 }))
+        .map(p => ({ ...p, opacity: p.opacity * 0.92 }))
         .filter(p => p.opacity > 0.01);
 
       rafRef.current = requestAnimationFrame(animate);

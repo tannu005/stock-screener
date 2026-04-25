@@ -21,22 +21,22 @@ export default function HeroHeader() {
   const sentimentColor = gainers > losers ? '#00ff88' : gainers < losers ? '#ff3366' : '#ffd700';
 
   return (
-    <header className="relative z-10 border-b border-white/5 bg-obsidian/80 backdrop-blur-sm">
-      {/* Top bar */}
-      <div className="flex items-center justify-between px-6 py-2 border-b border-white/5">
-        <div className="flex items-center gap-4">
+    <header className="relative z-10 border-b border-white/10 bg-gradient-to-b from-slate-900/60 to-obsidian/40 backdrop-blur-xl">
+      {/* Top bar with enhanced styling */}
+      <div className="flex items-center justify-between px-8 py-3 border-b border-white/5">
+        <div className="flex items-center gap-6">
           <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-aurora pulse-dot" />
-            <span className="text-aurora font-mono text-xs tracking-widest">LIVE</span>
+            <div className="w-2.5 h-2.5 rounded-full bg-aurora animate-glow-pulse" />
+            <span className="text-aurora font-mono text-xs tracking-widest font-semibold">LIVE</span>
           </div>
-          <span className="text-white/30 text-xs font-mono">{time} EST</span>
-          <div className="flex items-center gap-1">
-            <span className="text-white/30 text-xs font-mono">WS:</span>
-            <span className="text-xs font-mono" style={{ color: '#00ff88' }}>CONNECTED</span>
+          <span className="text-white/40 text-xs font-mono tracking-wide">{time} EST</span>
+          <div className="flex items-center gap-2">
+            <span className="text-white/40 text-xs font-mono">WS:</span>
+            <span className="text-xs font-mono text-aurora animate-shimmer">CONNECTED</span>
           </div>
         </div>
 
-        <div className="flex items-center gap-6 text-xs font-mono">
+        <div className="flex items-center gap-8 text-xs font-mono">
           <StatPill label="UNIVERSE" value={allStocks.length.toLocaleString()} color="#00d4ff" />
           <StatPill label="MATCHED" value={filteredStocks.length.toLocaleString()} color="#8b5cf6" />
           <StatPill label="GAINERS" value={gainers.toString()} color="#00ff88" />
@@ -47,55 +47,67 @@ export default function HeroHeader() {
         </div>
       </div>
 
-      {/* Main header */}
-      <div className="flex items-center justify-between px-6 py-4">
+      {/* Main header - Premium styling */}
+      <div className="flex items-center justify-between px-8 py-6">
         <div className="flex items-center gap-6">
-          {/* Logo */}
-          <div className="flex items-center gap-3">
-            <div className="relative w-10 h-10">
-              <svg viewBox="0 0 40 40" className="w-10 h-10">
-                <polygon points="20,2 38,11 38,29 20,38 2,29 2,11" fill="none" stroke="#00d4ff" strokeWidth="1" />
-                <polygon points="20,8 32,14 32,26 20,32 8,26 8,14" fill="none" stroke="#00d4ff" strokeWidth="0.5" opacity="0.5" />
-                <circle cx="20" cy="20" r="4" fill="#00d4ff" opacity="0.8" />
-                <line x1="20" y1="8" x2="20" y2="14" stroke="#00d4ff" strokeWidth="1" />
-                <line x1="20" y1="26" x2="20" y2="32" stroke="#00d4ff" strokeWidth="1" />
+          {/* Logo with glow */}
+          <div className="flex items-center gap-4 group cursor-pointer">
+            <div className="relative w-12 h-12 animate-float">
+              <div className="absolute inset-0 rounded-lg bg-gradient-to-br from-plasma/20 to-violet/20 blur-lg group-hover:blur-xl transition-all duration-300" />
+              <svg viewBox="0 0 40 40" className="w-12 h-12 relative z-10 drop-shadow-lg">
+                <defs>
+                  <linearGradient id="logo-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" style={{ stopColor: '#00d4ff', stopOpacity: 1 }} />
+                    <stop offset="100%" style={{ stopColor: '#8b5cf6', stopOpacity: 1 }} />
+                  </linearGradient>
+                </defs>
+                <polygon points="20,2 38,11 38,29 20,38 2,29 2,11" fill="none" stroke="url(#logo-grad)" strokeWidth="1.5" />
+                <polygon points="20,8 32,14 32,26 20,32 8,26 8,14" fill="none" stroke="url(#logo-grad)" strokeWidth="0.8" opacity="0.6" />
+                <circle cx="20" cy="20" r="4" fill="url(#logo-grad)" opacity="0.9" />
               </svg>
             </div>
             <div>
-              <div className="font-display text-2xl tracking-widest glow-plasma text-white">
-                STOCKSCREENER<span style={{ color: '#00d4ff' }}>PRO</span>
+              <div className="font-display text-3xl font-bold tracking-tight">
+                <span className="bg-gradient-to-r from-plasma via-violet to-aurora bg-clip-text text-transparent drop-shadow-lg">
+                  STOCK SCREENER
+                </span>
+                <span className="text-plasma drop-shadow-lg"> PRO</span>
               </div>
-              <div className="text-xs text-white/30 font-mono tracking-widest">REAL-TIME MARKET INTELLIGENCE</div>
+              <div className="text-xs text-white/40 font-mono tracking-widest uppercase mt-1">Real-Time Market Intelligence</div>
             </div>
           </div>
         </div>
 
-        {/* Market sentiment */}
-        <div className="flex items-center gap-8">
-          <div className="text-center">
-            <div className="text-xs text-white/30 font-mono tracking-widest mb-1">MARKET SENTIMENT</div>
-            <div className="font-display text-2xl tracking-widest" style={{ color: sentimentColor }}>
+        {/* Market sentiment with enhanced styling */}
+        <div className="flex items-center gap-12">
+          <div className="text-center group">
+            <div className="text-xs text-white/40 font-mono tracking-widest mb-2 uppercase">Market Sentiment</div>
+            <div className="font-display text-3xl font-bold tracking-tight drop-shadow-lg group-hover:drop-shadow-[0_0_20px_rgba(0,212,255,0.5)] transition-all duration-300" style={{ color: sentimentColor }}>
               {marketSentiment}
             </div>
           </div>
+
           <div className="text-center">
-            <div className="text-xs text-white/30 font-mono tracking-widest mb-1">ADVANCE/DECLINE</div>
-            <div className="flex items-center gap-2 font-mono">
-              <span style={{ color: '#00ff88' }}>{gainers}</span>
+            <div className="text-xs text-white/40 font-mono tracking-widest mb-2 uppercase">Advance / Decline</div>
+            <div className="flex items-center gap-3 font-mono text-lg">
+              <span className="text-aurora font-bold">{gainers}</span>
               <span className="text-white/20">/</span>
-              <span style={{ color: '#ff3366' }}>{losers}</span>
+              <span className="text-crimson font-bold">{losers}</span>
             </div>
           </div>
-          <div className="relative w-32 h-8">
-            <div className="absolute inset-0 rounded bg-graphite overflow-hidden">
-              <div
-                className="h-full rounded transition-all duration-1000"
-                style={{
-                  width: `${(gainers / Math.max(gainers + losers, 1)) * 100}%`,
-                  background: 'linear-gradient(90deg, #00ff88, #00d4ff)',
-                }}
-              />
+
+          {/* Sentiment bar - Enhanced */}
+          <div className="relative w-40 h-10 rounded-lg overflow-hidden border border-white/10 glass-card">
+            <div
+              className="h-full rounded-lg transition-all duration-1000 relative overflow-hidden"
+              style={{
+                width: `${(gainers / Math.max(gainers + losers, 1)) * 100}%`,
+                background: 'linear-gradient(90deg, #00ff88, #00d4ff)',
+              }}
+            >
+              <div className="absolute inset-0 animate-shimmer" style={{ background: 'linear-gradient(90deg, transparent, white, transparent)' }} />
             </div>
+            <div className="absolute inset-0 rounded-lg pointer-events-none" style={{ boxShadow: 'inset 0 0 20px rgba(0, 212, 255, 0.1)' }} />
           </div>
         </div>
       </div>
@@ -105,9 +117,11 @@ export default function HeroHeader() {
 
 function StatPill({ label, value, color }: { label: string; value: string; color: string }) {
   return (
-    <div className="flex items-center gap-1.5">
-      <span className="text-white/30">{label}:</span>
-      <span style={{ color }} className="font-bold">{value}</span>
+    <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg glass-card hover:scale-105 transition-transform duration-300 cursor-default">
+      <span className="text-white/35 font-semibold tracking-wide">{label}</span>
+      <span className="font-bold tracking-wide" style={{ color, textShadow: `0 0 10px ${color}40` }}>
+        {value}
+      </span>
     </div>
   );
 }
