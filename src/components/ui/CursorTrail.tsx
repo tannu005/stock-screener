@@ -2,12 +2,19 @@
 // src/components/ui/CursorTrail.tsx
 import { useEffect, useRef } from 'react';
 
+interface Particle {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  life: number;
+  color: string;
+}
+
 export default function CursorTrail() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const trailRef = useRef<{ x: number; y: number; opacity: number; size: number; color: string }[]>([]);
-  const mouseRef = useRef({ x: 0, y: 0 });
-  const rafRef = useRef<number>(0);
-  const colorRef = useRef<string>('rgba(0, 212, 255, 0.8)');
+  const particlesRef = useRef<Particle[]>([]);
+  const lastMouseRef = useRef({ x: 0, y: 0, time: 0 });
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -24,68 +31,81 @@ export default function CursorTrail() {
     };
 
     const handleMouseMove = (e: MouseEvent) => {
-      mouseRef.current = { x: e.clientX, y: e.clientY };
+      const now = Date.now();
+      
+      // Create particle burst every 50ms for smooth but subtle effect
+      if (now - lastMouseRef.current.time > 50) {
+        lastMouseRef.current = { x: e.clientX, y: e.clientY, time: now };
 
-      // Vary color based on mouse position for premium effect
-      const colors = [
-        'rgba(212, 165, 116, 0.7)',  // Primary beige
-        'rgba(155, 140, 124, 0.7)',  // Warm brown
-        'rgba(193, 154, 107, 0.6)',  // Light gold
-      ];
-      const colorIndex = Math.floor((e.clientX / window.innerWidth) * colors.length);
-      colorRef.current = colors[colorIndex] || colors[0];
+        // Determine color based on mouse position
+        const colors = [
+          'rgba(212, 165, 116, 0.8)',   // Beige
+          'rgba(193, 154, 107, 0.8)',   // Light gold
+          'rgba(155, 140, 124, 0.7)',   // Warm brown
+        ];
+        const colorIndex = Math.floor((e.clientX / window.innerWidth) * colors.length);
+        const baseColor = colors[colorIndex] || colors[0];
 
-      // Add multiple trail points for smoother effect
-      for (let i = 0; i < 2; i++) {
-        trailRef.current.push({
-          x: e.clientX,
-          y: e.clientY,
-          opacity: 1 - (i * 0.3),
-          size: 3 + Math.random() * 3,
-          color: colorRef.current,
-        });
-      }
-
-      if (trailRef.current.length > 80) {
-        trailRef.current.shift();
+        // Create 5-8 particles in a burst pattern
+        const burstCount = 5 + Math.floor(Math.random() * 3);
+        for (let i = 0; i < burstCount; i++) {
+          const angle = (Math.PI * 2 * i) / burstCount + (Math.random() - 0.5) * 0.3;
+          const speed = 1 + Math.random() * 2;
+          
+          particlesRef.current.push({
+            x: e.clientX,
+            y: e.clientY,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed,
+            life: 1,
+            color: baseColor,
+          });
+        }
       }
     };
 
     const animate = () => {
-      // Clear with fade effect for smoother trails
-      ctx.fillStyle = 'rgba(31, 26, 22, 0.1)';
+      // Clear with slight fade
+      ctx.fillStyle = 'rgba(31, 26, 22, 0.05)';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      trailRef.current.forEach((point, i) => {
-        const progress = i / trailRef.current.length;
-        const size = point.size * progress;
-        const opacity = point.opacity * progress * 0.8;
+      // Update and draw particles
+      particlesRef.current = particlesRef.current.filter(p => {
+        p.life -= 0.02;
+        
+        if (p.life <= 0) return false;
 
-        // Create premium glowing effect
-        const gradient = ctx.createRadialGradient(point.x, point.y, 0, point.x, point.y, size * 4);
-        gradient.addColorStop(0, point.color.replace('0.7', (opacity * 0.9).toString()).replace('0.5', (opacity * 0.7).toString()));
-        gradient.addColorStop(0.5, point.color.replace('0.7', (opacity * 0.4).toString()).replace('0.5', (opacity * 0.3).toString()));
-        gradient.addColorStop(1, 'transparent');
+        // Physics
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.1; // Gravity
+        p.vx *= 0.98; // Friction
+
+        // Draw particle with glow
+        const size = 4 * p.life;
+        const opacity = p.life * 0.6;
+
+        // Outer glow
+        const gradient = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, size * 2);
+        gradient.addColorStop(0, p.color.replace('0.8', (opacity * 0.8).toString()).replace('0.7', (opacity * 0.7).toString()));
+        gradient.addColorStop(0.7, p.color.replace('0.8', (opacity * 0.3).toString()).replace('0.7', (opacity * 0.25).toString()));
+        gradient.addColorStop(1, 'rgba(212, 165, 116, 0)');
 
         ctx.beginPath();
-        ctx.arc(point.x, point.y, size * 4, 0, Math.PI * 2);
+        ctx.arc(p.x, p.y, size * 2, 0, Math.PI * 2);
         ctx.fillStyle = gradient;
         ctx.fill();
 
-        // Add outer glow
-        ctx.strokeStyle = point.color.replace('0.7', (opacity * 0.3).toString()).replace('0.5', (opacity * 0.15).toString());
-        ctx.lineWidth = 1;
+        // Core particle
         ctx.beginPath();
-        ctx.arc(point.x, point.y, size * 5, 0, Math.PI * 2);
-        ctx.stroke();
+        ctx.arc(p.x, p.y, size * 0.4, 0, Math.PI * 2);
+        ctx.fillStyle = p.color.replace('0.8', opacity.toString()).replace('0.7', opacity.toString());
+        ctx.fill();
+
+        return true;
       });
 
-      // Fade trail
-      trailRef.current = trailRef.current
-        .map(p => ({ ...p, opacity: p.opacity * 0.92 }))
-        .filter(p => p.opacity > 0.01);
-
-      rafRef.current = requestAnimationFrame(animate);
+      requestAnimationFrame(animate);
     };
 
     window.addEventListener('mousemove', handleMouseMove);
@@ -95,7 +115,6 @@ export default function CursorTrail() {
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('resize', handleResize);
-      cancelAnimationFrame(rafRef.current);
     };
   }, []);
 
@@ -104,9 +123,12 @@ export default function CursorTrail() {
       ref={canvasRef}
       style={{
         position: 'fixed',
-        inset: 0,
+        top: 0,
+        left: 0,
+        width: '100vw',
+        height: '100vh',
         pointerEvents: 'none',
-        zIndex: 9998,
+        zIndex: 9999,
         mixBlendMode: 'screen',
       }}
     />

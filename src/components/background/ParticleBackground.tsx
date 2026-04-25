@@ -1,52 +1,152 @@
 'use client';
 // src/components/background/ParticleBackground.tsx
-import { useRef, useMemo } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
+import { useRef, useMemo, useEffect, useState } from 'react';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { useScreenerStore } from '@/lib/store/screenerStore';
 
-function ParticleField() {
-  const meshRef = useRef<THREE.Points>(null);
-  const count = 4000;
+gsap.registerPlugin(ScrollTrigger);
 
-  const { positions, colors, sizes } = useMemo(() => {
-    const positions = new Float32Array(count * 3);
-    const colors = new Float32Array(count * 3);
-    const sizes = new Float32Array(count);
+// ===== SHADER-BASED WAVE SYSTEM =====
+function ShaderWaveBackground() {
+  const meshRef = useRef<THREE.Mesh>(null);
+  const { filteredStocks } = useScreenerStore();
 
-    const palettes = [
-      [0, 0.83, 1],      // plasma #00d4ff
-      [0, 1, 0.53],      // aurora #00ff88
-      [0.55, 0.36, 0.96], // violet
-      [1, 0.42, 0.21],   // ember
-    ];
+  // Calculate sentiment from stock data
+  const sentiment = useMemo(() => {
+    if (!filteredStocks.length) return 0.5;
+    const gainers = filteredStocks.filter(s => s.changePct > 0).length;
+    const losers = filteredStocks.filter(s => s.changePct < 0).length;
+    return gainers / Math.max(gainers + losers, 1);
+  }, [filteredStocks]);
 
-    for (let i = 0; i < count; i++) {
-      const i3 = i * 3;
-      positions[i3] = (Math.random() - 0.5) * 40;
-      positions[i3 + 1] = (Math.random() - 0.5) * 30;
-      positions[i3 + 2] = (Math.random() - 0.5) * 20;
+  // Custom wave shader
+  const vertexShader = `
+    uniform float uTime;
+    uniform float uSentiment;
+    varying float vWave;
+    varying vec3 vPos;
 
-      const palette = palettes[Math.floor(Math.random() * palettes.length)];
-      const brightness = 0.4 + Math.random() * 0.6;
-      colors[i3] = palette[0] * brightness;
-      colors[i3 + 1] = palette[1] * brightness;
-      colors[i3 + 2] = palette[2] * brightness;
-
-      sizes[i] = Math.random() * 3 + 0.5;
+    void main() {
+      vPos = position;
+      float wave = sin(position.x * 0.5 + uTime * 0.5) * 0.3;
+      wave += sin(position.y * 0.3 + uTime * 0.3) * 0.2;
+      wave *= uSentiment; // Sentiment affects wave amplitude
+      vWave = wave;
+      
+      vec3 pos = position;
+      pos.z += wave;
+      
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
     }
-    return { positions, colors, sizes };
-  }, []);
+  `;
+
+  const fragmentShader = `
+    uniform float uTime;
+    uniform float uSentiment;
+    varying float vWave;
+    varying vec3 vPos;
+
+    void main() {
+      // Sentiment-driven color gradient
+      vec3 bullColor = vec3(0.48, 0.62, 0.48);   // Muted green for bullish
+      vec3 bearColor = vec3(0.66, 0.44, 0.44);   // Muted red for bearish
+      vec3 neutralColor = vec3(0.83, 0.64, 0.45); // Beige for neutral
+      
+      // Blend colors based on sentiment
+      vec3 color = mix(bearColor, bullColor, uSentiment);
+      color = mix(color, neutralColor, 0.3); // Add warmth
+      
+      // Wave-based opacity for flow effect
+      float opacity = 0.15 + vWave * 0.1;
+      opacity *= (0.7 + sin(uTime * 0.5) * 0.2);
+      
+      gl_FragColor = vec4(color, opacity);
+    }
+  `;
+
+  const uniforms = useRef({
+    uTime: { value: 0.0 },
+    uSentiment: { value: sentiment },
+  });
 
   useFrame((state) => {
     if (!meshRef.current) return;
-    const time = state.clock.elapsedTime;
-    meshRef.current.rotation.y = time * 0.02;
-    meshRef.current.rotation.x = Math.sin(time * 0.01) * 0.1;
+    uniforms.current.uTime.value = state.clock.elapsedTime;
+    uniforms.current.uSentiment.value = sentiment;
+  });
 
-    const posAttr = meshRef.current.geometry.attributes.position as THREE.BufferAttribute;
+  return (
+    <mesh ref={meshRef} position={[0, 0, -25]}>
+      <planeGeometry args={[60, 40, 100, 100]} />
+      <shaderMaterial
+        uniforms={uniforms.current}
+        vertexShader={vertexShader}
+        fragmentShader={fragmentShader}
+        transparent
+        wireframe={false}
+        depthWrite={false}
+      />
+    </mesh>
+  );
+}
+
+// ===== SENTIMENT-DRIVEN PARTICLE EMITTER =====
+function SentimentParticles() {
+  const meshRef = useRef<THREE.Points>(null);
+  const { filteredStocks } = useScreenerStore();
+  const count = 1500;
+
+  const sentiment = useMemo(() => {
+    if (!filteredStocks.length) return 0.5;
+    const gainers = filteredStocks.filter(s => s.changePct > 0).length;
+    const losers = filteredStocks.filter(s => s.changePct < 0).length;
+    return gainers / Math.max(gainers + losers, 1);
+  }, [filteredStocks]);
+
+  const { positions, colors } = useMemo(() => {
+    const positions = new Float32Array(count * 3);
+    const colors = new Float32Array(count * 3);
+
     for (let i = 0; i < count; i++) {
       const i3 = i * 3;
-      posAttr.array[i3 + 1] = (posAttr.array[i3 + 1] as number) + Math.sin(time * 0.5 + i * 0.1) * 0.001;
+      positions[i3] = (Math.random() - 0.5) * 50;
+      positions[i3 + 1] = (Math.random() - 0.5) * 30;
+      positions[i3 + 2] = (Math.random() - 0.5) * 20 - 15;
+
+      // Color based on sentiment
+      if (sentiment > 0.6) {
+        // Bullish: green tones
+        colors[i3] = 0.48;
+        colors[i3 + 1] = 0.62;
+        colors[i3 + 2] = 0.48;
+      } else if (sentiment < 0.4) {
+        // Bearish: red tones
+        colors[i3] = 0.66;
+        colors[i3 + 1] = 0.44;
+        colors[i3 + 2] = 0.44;
+      } else {
+        // Neutral: beige
+        colors[i3] = 0.83;
+        colors[i3 + 1] = 0.64;
+        colors[i3 + 2] = 0.45;
+      }
+    }
+    return { positions, colors };
+  }, [sentiment]);
+
+  useFrame((state) => {
+    if (!meshRef.current) return;
+    const posAttr = meshRef.current.geometry.attributes.position as THREE.BufferAttribute;
+    const array = posAttr.array as Float32Array;
+
+    for (let i = 0; i < count; i++) {
+      const i3 = i * 3;
+      // Drift upward, influenced by sentiment
+      array[i3 + 1] += Math.sin(state.clock.elapsedTime * 0.3 + i * 0.01) * 0.005 * sentiment;
+      if (array[i3 + 1] > 20) array[i3 + 1] = -20;
     }
     posAttr.needsUpdate = true;
   });
@@ -56,13 +156,12 @@ function ParticleField() {
       <bufferGeometry>
         <bufferAttribute attach="attributes-position" args={[positions, 3]} />
         <bufferAttribute attach="attributes-color" args={[colors, 3]} />
-        <bufferAttribute attach="attributes-size" args={[sizes, 1]} />
       </bufferGeometry>
       <pointsMaterial
         size={0.08}
         vertexColors
         transparent
-        opacity={0.6}
+        opacity={0.4}
         sizeAttenuation
         blending={THREE.AdditiveBlending}
         depthWrite={false}
@@ -71,92 +170,119 @@ function ParticleField() {
   );
 }
 
-function GridLines() {
-  const lineRef = useRef<THREE.LineSegments>(null);
+// ===== SCROLL-TRIGGERED ANIMATION LAYER =====
+function ScrollAnimationLayer() {
+  const groupRef = useRef<THREE.Group>(null);
 
-  const geometry = useMemo(() => {
-    const geo = new THREE.BufferGeometry();
-    const vertices: number[] = [];
-    const step = 3;
-    const extent = 30;
+  useEffect(() => {
+    if (!groupRef.current) return;
 
-    for (let x = -extent; x <= extent; x += step) {
-      vertices.push(x, -extent, -15, x, extent, -15);
-    }
-    for (let y = -extent; y <= extent; y += step) {
-      vertices.push(-extent, y, -15, extent, y, -15);
-    }
+    gsap.registerEffect({
+      name: 'scroll3D',
+      effect: (targets: any) => {
+        return gsap.timeline()
+          .to(groupRef.current, {
+            position: [0, 0, 0],
+            rotation: [0, 0, 0],
+            duration: 1,
+          });
+      },
+      defaults: { duration: 1 },
+    });
 
-    geo.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
-    return geo;
+    const tl = gsap.timeline({
+      scrollTrigger: {
+        trigger: '.content-section',
+        start: 'top center',
+        end: 'bottom center',
+        scrub: 0.5,
+        markers: false,
+      },
+    });
+
+    tl.to(groupRef.current, {
+      rotation: [0, Math.PI * 0.2, 0],
+      z: -10,
+      duration: 1,
+    });
+
+    return () => {
+      ScrollTrigger.getAll().forEach(trigger => trigger.kill());
+    };
   }, []);
 
-  useFrame((state) => {
-    if (!lineRef.current) return;
-    lineRef.current.material.opacity = 0.04 + Math.sin(state.clock.elapsedTime * 0.5) * 0.01;
-  });
+  return <group ref={groupRef} />;
+}
+
+// ===== PREMIUM AMBIENT LIGHTING WITH SENTIMENT =====
+function SentimentLighting() {
+  const { filteredStocks } = useScreenerStore();
+
+  const sentiment = useMemo(() => {
+    if (!filteredStocks.length) return 0.5;
+    const gainers = filteredStocks.filter(s => s.changePct > 0).length;
+    const losers = filteredStocks.filter(s => s.changePct < 0).length;
+    return gainers / Math.max(gainers + losers, 1);
+  }, [filteredStocks]);
 
   return (
-    <lineSegments ref={lineRef} geometry={geometry}>
-      <lineBasicMaterial color="#00d4ff" transparent opacity={0.04} />
-    </lineSegments>
+    <>
+      <ambientLight
+        intensity={0.25}
+        color={new THREE.Color().lerpColors(
+          new THREE.Color(0.66, 0.44, 0.44),
+          new THREE.Color(0.48, 0.62, 0.48),
+          sentiment
+        )}
+      />
+      <directionalLight position={[20, 15, 20]} intensity={0.3} color={0xe8d5c4} />
+      <pointLight
+        position={[-20, -10, 10]}
+        intensity={0.15}
+        color={new THREE.Color().lerpColors(
+          new THREE.Color(0.66, 0.44, 0.44),
+          new THREE.Color(0.48, 0.62, 0.48),
+          sentiment
+        )}
+      />
+    </>
   );
 }
 
-function DataNodes() {
-  const groupRef = useRef<THREE.Group>(null);
-  const nodeCount = 30;
-
-  const positions = useMemo(() =>
-    Array.from({ length: nodeCount }, () => ({
-      x: (Math.random() - 0.5) * 30,
-      y: (Math.random() - 0.5) * 20,
-      z: (Math.random() - 0.5) * 10 - 8,
-      speed: 0.5 + Math.random() * 1.5,
-      phase: Math.random() * Math.PI * 2,
-    })), []);
-
-  useFrame((state) => {
-    if (!groupRef.current) return;
-    groupRef.current.children.forEach((child, i) => {
-      const pos = positions[i];
-      child.position.y = pos.y + Math.sin(state.clock.elapsedTime * pos.speed + pos.phase) * 0.5;
-      child.rotation.z += 0.01;
-      (child as THREE.Mesh).material.opacity = 0.3 + Math.sin(state.clock.elapsedTime * 2 + pos.phase) * 0.2;
-    });
-  });
-
+// ===== OPACITY & BLUR OVERLAY FOR CRISP FOREGROUND =====
+function BackgroundOverlay() {
   return (
-    <group ref={groupRef}>
-      {positions.map((pos, i) => (
-        <mesh key={i} position={[pos.x, pos.y, pos.z]}>
-          <octahedronGeometry args={[0.15, 0]} />
-          <meshBasicMaterial
-            color={i % 3 === 0 ? '#00d4ff' : i % 3 === 1 ? '#00ff88' : '#8b5cf6'}
-            transparent
-            opacity={0.4}
-            wireframe
-          />
-        </mesh>
-      ))}
-    </group>
+    <div
+      style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 1,
+        pointerEvents: 'none',
+        background: 'linear-gradient(to bottom, rgba(42, 38, 32, 0.3) 0%, rgba(42, 38, 32, 0.15) 50%, rgba(42, 38, 32, 0.3) 100%)',
+        backdropFilter: 'blur(2px)',
+      }}
+    />
   );
 }
 
+// ===== MAIN CANVAS ===== 
 export default function ParticleBackground() {
   return (
-    <div className="three-canvas" style={{ position: 'fixed', inset: 0, zIndex: 0 }}>
-      <Canvas
-        camera={{ position: [0, 0, 15], fov: 60 }}
-        gl={{ antialias: false, alpha: true }}
-        dpr={[1, 1.5]}
-      >
-        <ambientLight intensity={0.1} />
-        <ParticleField />
-        <GridLines />
-        <DataNodes />
-        <fog attach="fog" args={['#020306', 20, 50]} />
-      </Canvas>
-    </div>
+    <>
+      <div className="three-canvas" style={{ position: 'fixed', inset: 0, zIndex: 0 }}>
+        <Canvas
+          camera={{ position: [0, 5, 20], fov: 50 }}
+          gl={{ antialias: false, alpha: true, powerPreference: 'high-performance' }}
+          dpr={[1, 1.5]}
+        >
+          <SentimentLighting />
+          <ShaderWaveBackground />
+          <SentimentParticles />
+          <ScrollAnimationLayer />
+          <fog attach="fog" args={[0x2a2620, 10, 60]} />
+        </Canvas>
+      </div>
+      <BackgroundOverlay />
+    </>
   );
 }
