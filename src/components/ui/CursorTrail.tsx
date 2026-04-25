@@ -27,11 +27,10 @@ export default function CursorTrail() {
       mouseRef.current = { x: e.clientX, y: e.clientY };
 
       // Vary color based on mouse position for premium effect
-      const hue = (e.clientX / window.innerWidth) * 60 + 180; // Cyan to purple range
       const colors = [
-        'rgba(0, 212, 255, 0.7)',  // Plasma
-        'rgba(139, 92, 246, 0.7)', // Violet
-        'rgba(0, 255, 136, 0.5)',  // Aurora
+        'rgba(212, 165, 116, 0.7)',  // Primary beige
+        'rgba(155, 140, 124, 0.7)',  // Warm brown
+        'rgba(193, 154, 107, 0.6)',  // Light gold
       ];
       const colorIndex = Math.floor((e.clientX / window.innerWidth) * colors.length);
       colorRef.current = colors[colorIndex] || colors[0];
@@ -54,7 +53,7 @@ export default function CursorTrail() {
 
     const animate = () => {
       // Clear with fade effect for smoother trails
-      ctx.fillStyle = 'rgba(10, 14, 39, 0.1)';
+      ctx.fillStyle = 'rgba(31, 26, 22, 0.1)';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
       trailRef.current.forEach((point, i) => {
