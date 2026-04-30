@@ -9,6 +9,20 @@ module.exports = {
         sans: ['var(--font-sans)', 'sans-serif'],
       },
       colors: {
+        // Luxury Beige & Warm Palette
+        primary: '#d4a574',
+        'primary-dark': '#a8925f',
+        accent: '#c19a6b',
+        'accent-light': '#e8d5c4',
+        success: '#7a9d7a',
+        danger: '#a87070',
+        warning: '#c9a876',
+        dark: '#1f1a16',
+        'dark-light': '#2a2620',
+        'dark-lighter': '#35302b',
+        cream: '#f5f1ed',
+
+        // Legacy names for compatibility
         void: '#020306',
         obsidian: '#060b14',
         abyss: '#0a1020',

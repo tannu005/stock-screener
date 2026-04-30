@@ -176,7 +176,7 @@ export default function StockTable() {
       size: 100,
       cell: ({ row }) => (
         <MiniChart
-          data={row.original.candleData.slice(-30)}
+          data={row.original.candleData}
           positive={row.original.changePct >= 0}
         />
       ),
@@ -205,7 +205,7 @@ export default function StockTable() {
     count: rows.length,
     getScrollElement: () => parentRef.current,
     estimateSize: () => 52,
-    overscan: 20,
+    overscan: 10,
   });
 
   const items = virtualizer.getVirtualItems();

@@ -1,6 +1,5 @@
 'use client';
-// src/components/charts/MiniChart.tsx
-import { useMemo } from 'react';
+import { useMemo, memo } from 'react';
 import { CandleData } from '@/types/stock';
 
 interface MiniChartProps {
@@ -10,10 +9,12 @@ interface MiniChartProps {
   height?: number;
 }
 
-export default function MiniChart({ data, positive, width = 90, height = 32 }: MiniChartProps) {
+const MiniChart = memo(({ data, positive, width = 90, height = 32 }: MiniChartProps) => {
   const path = useMemo(() => {
-    if (!data.length) return '';
-    const prices = data.map(d => d.close);
+    if (!data || !data.length) return '';
+    // Use last 30 points
+    const points = data.length > 30 ? data.slice(-30) : data;
+    const prices = points.map(d => d.close);
     const min = Math.min(...prices);
     const max = Math.max(...prices);
     const range = max - min || 1;
@@ -44,4 +45,6 @@ export default function MiniChart({ data, positive, width = 90, height = 32 }: M
       )}
     </svg>
   );
-}
+});
+
+export default MiniChart;
