@@ -94,7 +94,7 @@ export default function DashboardPage() {
             <h2 className="text-3xl font-bold mb-2">Live Market Explorer</h2>
             <p className="text-white/40 text-sm">Advanced algorithmic filtering across 5,000+ instruments</p>
           </div>
-          <DetailedDataView forceExpand={true} />
+          <DetailedDataView />
         </div>
       </section>
 

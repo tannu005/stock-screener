@@ -218,7 +218,10 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                 </>
               )}
             </div>
-          </AnimatePresence>
-          );
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>
+  );
 }
 
