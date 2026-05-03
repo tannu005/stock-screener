@@ -19,22 +19,22 @@ export function ProceduralGrid() {
     uniform float uTime;
     
     void main() {
-      vec2 grid = abs(fract(vUv * 40.0 - 0.5) - 0.5) / fwidth(vUv * 40.0);
+      vec2 grid = abs(fract(vUv * 40.0 - 0.5) - 0.5) / 0.05; // Simplified grid
       float line = min(grid.x, grid.y);
-      float grid1 = 1.0 - min(line, 1.0);
+      float grid1 = 1.0 - smoothstep(0.0, 1.0, line);
       
-      vec2 grid22 = abs(fract(vUv * 8.0 - 0.5) - 0.5) / fwidth(vUv * 8.0);
+      vec2 grid22 = abs(fract(vUv * 8.0 - 0.5) - 0.5) / 0.1;
       float line2 = min(grid22.x, grid22.y);
-      float grid2 = 1.0 - min(line2, 1.0);
+      float grid2 = 1.0 - smoothstep(0.0, 1.0, line2);
       
       float intensity = grid1 * 0.1 + grid2 * 0.2;
       
-      // Add a pulse effect
-      float pulse = sin(uTime * 0.5 + vUv.x * 10.0) * 0.5 + 0.5;
-      intensity *= 0.5 + pulse * 0.5;
+      // Simplified pulse
+      float pulse = sin(uTime * 0.5 + vUv.x * 5.0) * 0.2 + 0.8;
+      intensity *= pulse;
       
       vec3 color = vec3(0.83, 0.65, 0.42); // Primary color #d4a574
-      gl_FragColor = vec4(color, intensity * 0.3);
+      gl_FragColor = vec4(color, intensity * 0.2);
     }
   `;
 

@@ -19,6 +19,8 @@ export default function MagneticCursor() {
 
     let mouseX = 0;
     let mouseY = 0;
+    let followerX = 0;
+    let followerY = 0;
 
     const onMouseMove = (e: MouseEvent) => {
       mouseX = e.clientX;
@@ -28,15 +30,14 @@ export default function MagneticCursor() {
       yCursorSetter(mouseY);
     };
 
-    // Smooth follower animation using gsap.ticker for consistent performance
+    // Smooth follower animation using a simple lerp for maximum performance
     const updateFollower = () => {
-        gsap.to(follower, {
-            x: mouseX,
-            y: mouseY,
-            duration: 0.3,
-            ease: 'power2.out',
-            overwrite: true
-        });
+      const dt = 1.0 - Math.pow(1.0 - 0.15, gsap.ticker.deltaRatio());
+      followerX += (mouseX - followerX) * dt;
+      followerY += (mouseY - followerY) * dt;
+      
+      xFollowerSetter(followerX);
+      yFollowerSetter(followerY);
     };
 
     window.addEventListener('mousemove', onMouseMove);

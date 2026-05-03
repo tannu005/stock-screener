@@ -5,7 +5,7 @@ import * as THREE from 'three';
 
 export function SentimentParticles() {
   const meshRef = useRef<THREE.Points>(null);
-  const count = 2000;
+  const count = 1200;
 
   const { positions, colors } = useMemo(() => {
     const positions = new Float32Array(count * 3);

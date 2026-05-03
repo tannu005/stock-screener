@@ -6,7 +6,6 @@ export const metadata: Metadata = {
   title: 'Stock Screener Pro — Real-Time Market Intelligence',
   description: 'Professional stock screener with real-time data, advanced filtering, and cinematic visualization. Sign up for premium market analysis.',
   keywords: 'stock screener, trading, market analysis, real-time quotes, financial data',
-  viewport: 'width=device-width, initial-scale=1, maximum-scale=5',
   openGraph: {
     title: 'Stock Screener Pro',
     description: 'Professional stock screener with real-time data and advanced filtering',
@@ -31,7 +30,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           rel="stylesheet"
         />
         {/* Preload critical resources */}
-        <link rel="preload" as="image" href="/fonts/" />
       </head>
       <body className="bg-void text-white antialiased overflow-x-hidden" suppressHydrationWarning>
         {children}

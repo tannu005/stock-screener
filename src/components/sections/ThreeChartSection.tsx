@@ -1,12 +1,18 @@
 'use client';
+import { useState, useEffect, useMemo } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, PerspectiveCamera, Float } from '@react-three/drei';
 import { ThreeCandlestickChart } from '@/components/charts/ThreeCandlestickChart';
 import { useScreenerStore } from '@/lib/store/screenerStore';
-import { useMemo } from 'react';
+import { isWebGLSupported } from '@/lib/utils/webgl';
 
 export default function ThreeChartSection() {
   const { filteredStocks } = useScreenerStore();
+  const [supported, setSupported] = useState(true);
+
+  useEffect(() => {
+    setSupported(isWebGLSupported());
+  }, []);
   
   const mockData = useMemo(() => {
     let price = 150;
@@ -35,24 +41,34 @@ export default function ThreeChartSection() {
           <p className="text-white/50 text-sm">Explore market trends in a high-fidelity 3D environment</p>
         </div>
         
-        <div className="w-full h-full glass-card rounded-3xl border border-primary/20 overflow-hidden mt-16">
-          <Canvas>
-            <PerspectiveCamera makeDefault position={[0, 5, 20]} fov={50} />
-            <OrbitControls enableZoom={true} enablePan={true} />
-            <ambientLight intensity={0.5} />
-            <pointLight position={[10, 10, 10]} intensity={1} color="#d4a574" />
-            
-            <Float speed={1.5} rotationIntensity={0.2} floatIntensity={0.5}>
-              <ThreeCandlestickChart data={mockData} />
-            </Float>
-            
-            <fog attach="fog" args={['#1f1a16', 10, 50]} />
-          </Canvas>
+        <div className="w-full h-full glass-card rounded-3xl border border-primary/20 overflow-hidden mt-16 flex items-center justify-center">
+          {supported ? (
+            <Canvas>
+              <PerspectiveCamera makeDefault position={[0, 5, 20]} fov={50} />
+              <OrbitControls enableZoom={true} enablePan={true} />
+              <ambientLight intensity={0.5} />
+              <pointLight position={[10, 10, 10]} intensity={1} color="#d4a574" />
+              
+              <Float speed={1.5} rotationIntensity={0.2} floatIntensity={0.5}>
+                <ThreeCandlestickChart data={mockData} />
+              </Float>
+              
+              <fog attach="fog" args={['#1f1a16', 10, 50]} />
+            </Canvas>
+          ) : (
+            <div className="text-center p-10">
+              <div className="text-5xl mb-4">📊</div>
+              <h3 className="text-xl font-bold text-white mb-2">3D View Unavailable</h3>
+              <p className="text-white/50 max-w-md">Your browser or hardware doesn't support WebGL. Please use a modern browser for the full immersive experience.</p>
+            </div>
+          )}
         </div>
         
-        <div className="absolute bottom-6 right-6 z-10 glass-card p-4 rounded-xl border border-white/10 text-xs font-mono text-white/60">
-          USE MOUSE TO ROTATE • SCROLL TO ZOOM • RIGHT CLICK TO PAN
-        </div>
+        {supported && (
+          <div className="absolute bottom-6 right-6 z-10 glass-card p-4 rounded-xl border border-white/10 text-xs font-mono text-white/60">
+            USE MOUSE TO ROTATE • SCROLL TO ZOOM • RIGHT CLICK TO PAN
+          </div>
+        )}
       </div>
     </section>
   );

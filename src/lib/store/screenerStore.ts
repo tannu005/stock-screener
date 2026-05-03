@@ -19,7 +19,7 @@ interface ScreenerState {
   alerts: Set<string>;
   dataMode: 'simulated' | 'live';
   isAuthModalOpen: boolean;
-  user: { name: string; email: string; id?: string } | null;
+  user: { name: string; email: string; id?: string; isPro?: boolean } | null;
   token: string | null;
 
   // Actions
@@ -33,8 +33,9 @@ interface ScreenerState {
   toggleAlert: (symbol: string) => void;
   applyPreset: (criteria: FilterCriteria) => void;
   setAuthModalOpen: (open: boolean) => void;
-  login: (name: string, email: string, token?: string) => void;
+  login: (name: string, email: string, token?: string, isPro?: boolean) => void;
   logout: () => void;
+  upgradeToPro: () => void;
 }
 
 // Throttling updates to prevent hanging
@@ -121,9 +122,10 @@ export const useScreenerStore = create<ScreenerState>()(
         updateBuffer = {};
         updateTimeout = null;
 
-        const stockMap = new Map(get().allStocks.map(s => [s.symbol, s]));
-
-        const allStocks = get().allStocks.map(s => {
+        const { allStocks: prevStocks, filters, sort } = get();
+        
+        // Efficiently update only changed stocks
+        const allStocks = prevStocks.map(s => {
           const newPrice = currentBuffer[s.symbol];
           if (newPrice === undefined) return s;
 
@@ -132,12 +134,16 @@ export const useScreenerStore = create<ScreenerState>()(
           return { ...s, price: newPrice, change, changePct, lastUpdated: Date.now() };
         });
 
-        const filtered = applyFilters(allStocks, get().filters);
-        const sorted = sortStocks(filtered, get().sort);
+        // Only re-filter if there are active filters
+        const hasFilters = Object.keys(filters).length > 0;
+        const filtered = hasFilters ? applyFilters(allStocks, filters) : allStocks;
+        const sorted = sortStocks(filtered, sort);
 
         const newTickerUpdates: Record<string, { price: number; change: number }> = {};
+        const updatedStocksMap = new Map(allStocks.map(s => [s.symbol, s]));
+        
         Object.entries(currentBuffer).forEach(([sym, p]) => {
-          const stock = stockMap.get(sym);
+          const stock = updatedStocksMap.get(sym);
           if (stock) {
             newTickerUpdates[sym] = { price: p, change: p - stock.prevClose };
           }
@@ -151,7 +157,7 @@ export const useScreenerStore = create<ScreenerState>()(
             ...newTickerUpdates
           }
         }));
-      }, 500); // Process updates every 500ms to stay smooth
+      }, 800); // Increased interval for better UI stability
     },
 
     toggleWatchlist: (symbol) => {
@@ -178,14 +184,23 @@ export const useScreenerStore = create<ScreenerState>()(
 
     setAuthModalOpen: (open) => set({ isAuthModalOpen: open }),
 
-    login: (name, email, token) => {
-      set({ user: { name, email }, isAuthModalOpen: false, token: token || null });
-      localStorage.setItem('stock_screener_user', JSON.stringify({ name, email, token }));
+    login: (name, email, token, isPro) => {
+      set({ user: { name, email, isPro: !!isPro }, isAuthModalOpen: false, token: token || null });
+      localStorage.setItem('stock_screener_user', JSON.stringify({ name, email, token, isPro: !!isPro }));
     },
 
     logout: () => {
       set({ user: null, token: null });
       localStorage.removeItem('stock_screener_user');
+    },
+
+    upgradeToPro: () => {
+      const user = get().user;
+      if (user) {
+        const updatedUser = { ...user, isPro: true };
+        set({ user: updatedUser });
+        localStorage.setItem('stock_screener_user', JSON.stringify({ ...updatedUser, token: get().token }));
+      }
     },
   }))
 );

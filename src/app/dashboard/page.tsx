@@ -26,7 +26,7 @@ export default function DashboardPage() {
   return (
     <main className="min-h-screen bg-dark text-white selection:bg-primary selection:text-dark overflow-x-hidden">
       <FloatingNavbar />
-      
+
       {/* Dashboard Header */}
       <section className="pt-32 pb-12 px-6 bg-gradient-to-b from-dark-light to-dark">
         <div className="max-w-7xl mx-auto">
@@ -37,7 +37,7 @@ export default function DashboardPage() {
               </h1>
               <p className="text-white/50 font-mono text-sm uppercase tracking-widest">Premium Trading Terminal Active</p>
             </div>
-            
+
             <div className="flex items-center gap-4">
               <div className="glass-card px-4 py-2 rounded-xl border border-white/10 flex items-center gap-3">
                 <div className="w-2 h-2 rounded-full bg-success animate-pulse" />
@@ -87,7 +87,7 @@ export default function DashboardPage() {
       </section>
 
       <MarketSentimentPanel />
-      
+
       <section className="py-12 px-6">
         <div className="max-w-7xl mx-auto">
           <div className="mb-8">
@@ -99,7 +99,7 @@ export default function DashboardPage() {
       </section>
 
       <TopMoversSection />
-      
+
       <footer className="py-12 border-t border-white/5 bg-dark-light">
         <div className="max-w-7xl mx-auto px-6 text-center text-white/20 text-xs font-mono uppercase tracking-[0.2em]">
           Stock Screener Pro • Enterprise Intelligence Terminal • © 2026

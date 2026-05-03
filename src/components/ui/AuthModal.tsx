@@ -182,20 +182,30 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                       </div>
                     </div>
 
-                    <button
-                      type="submit"
-                      disabled={loading}
-                      className="w-full py-4 bg-primary text-dark font-bold rounded-2xl shadow-xl shadow-primary/20 hover:bg-accent transition-all transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-2 mt-6"
-                    >
-                      {loading ? (
-                        <Loader2 className="animate-spin" size={20} />
-                      ) : (
-                        <>
-                          {mode === 'signin' ? 'Sign In to Portal' : 'Create Pro Account'}
-                          <ArrowRight size={18} />
-                        </>
-                      )}
-                    </button>
+                    <div className="flex flex-col sm:flex-row gap-4 mt-6">
+                      <button
+                        type="button"
+                        onClick={onClose}
+                        className="flex-1 py-4 border-2 border-white/10 text-white font-bold rounded-2xl hover:bg-white/5 transition-all transform hover:scale-105 active:scale-95 disabled:opacity-50"
+                        disabled={loading}
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={loading}
+                        className="flex-[2] py-4 bg-primary text-dark font-bold rounded-2xl shadow-xl shadow-primary/20 hover:bg-accent transition-all transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-2"
+                      >
+                        {loading ? (
+                          <Loader2 className="animate-spin" size={20} />
+                        ) : (
+                          <>
+                            {mode === 'signin' ? 'Sign In' : 'Create Account'}
+                            <ArrowRight size={18} />
+                          </>
+                        )}
+                      </button>
+                    </div>
                   </form>
 
                   <div className="mt-8 text-center text-xs sm:text-sm text-white/40 font-mono">

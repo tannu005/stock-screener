@@ -11,6 +11,7 @@ import MarketSentimentPanel from '@/components/sections/MarketSentimentPanel';
 import TopMoversSection from '@/components/sections/TopMoversSection';
 import StockCardGroups from '@/components/sections/StockCardGroups';
 import DetailedDataView from '@/components/sections/DetailedDataView';
+import PricingSection from '@/components/sections/PricingSection';
 import TrustSignalsSection from '@/components/sections/TrustSignalsSection';
 import FloatingNavbar from '@/components/ui/FloatingNavbar';
 import ThreeChartSection from '@/components/sections/ThreeChartSection';
@@ -35,7 +36,7 @@ export default function HomePage() {
     if (savedUser && !user) {
       try {
         const parsed = JSON.parse(savedUser);
-        useScreenerStore.getState().login(parsed.name, parsed.email, parsed.token);
+        useScreenerStore.getState().login(parsed.name, parsed.email, parsed.token, parsed.isPro);
       } catch (e) {
         console.error('Failed to parse saved user');
       }
@@ -103,6 +104,10 @@ export default function HomePage() {
 
             <section className="content-section" data-cursor-theme="portfolio">
               <DetailedDataView />
+            </section>
+
+            <section className="content-section" data-cursor-theme="finance">
+              <PricingSection />
             </section>
 
             <section className="content-section" data-cursor-theme="portfolio">

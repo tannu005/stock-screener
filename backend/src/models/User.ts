@@ -20,7 +20,7 @@ const userSchema = new Schema<IUser>(
 );
 
 // Hash password before saving
-userSchema.pre('save', async function (next) {
+userSchema.pre('save', async function (this: IUser, next: any) {
     if (!this.isModified('password')) return next();
 
     try {
@@ -33,7 +33,7 @@ userSchema.pre('save', async function (next) {
 });
 
 // Method to compare passwords
-userSchema.methods.comparePassword = async function (password: string): Promise<boolean> {
+userSchema.methods.comparePassword = async function (this: IUser, password: string): Promise<boolean> {
     return await bcryptjs.compare(password, this.password);
 };
 

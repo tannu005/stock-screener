@@ -79,7 +79,7 @@ export function FinancialWaves() {
 
   return (
     <mesh ref={meshRef} rotation={[-Math.PI / 2.5, 0, 0]} position={[0, -2, -10]}>
-      <planeGeometry args={[50, 50, 128, 128]} />
+      <planeGeometry args={[50, 50, 48, 48]} />
       <shaderMaterial
         vertexShader={vertexShader}
         fragmentShader={fragmentShader}
