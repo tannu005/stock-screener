@@ -216,40 +216,41 @@ export default function StockTable() {
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
-      {/* Table header */}
-      <div className="flex-shrink-0 bg-abyss/80 border-b border-white/5">
-        {table.getHeaderGroups().map(headerGroup => (
-          <div key={headerGroup.id} className="flex items-center px-4 py-2">
-            {headerGroup.headers.map(header => (
-              <div
-                key={header.id}
-                style={{ width: header.column.getSize(), minWidth: header.column.getSize() }}
-                className="flex-shrink-0"
-              >
-                {header.isPlaceholder ? null : (
-                  <button
-                    onClick={header.column.getToggleSortingHandler()}
-                    className="flex items-center gap-1 text-xs font-mono tracking-widest text-white/30 hover:text-white/60 transition-colors w-full"
+      <div ref={parentRef} className="flex-1 overflow-auto">
+        <div className="inline-block min-w-full">
+          {/* Table header */}
+          <div className="sticky top-0 z-10 bg-abyss border-b border-white/5">
+            {table.getHeaderGroups().map(headerGroup => (
+              <div key={headerGroup.id} className="flex items-center px-4 py-2">
+                {headerGroup.headers.map(header => (
+                  <div
+                    key={header.id}
+                    style={{ width: header.column.getSize(), minWidth: header.column.getSize() }}
+                    className="flex-shrink-0"
                   >
-                    {flexRender(header.column.columnDef.header, header.getContext())}
-                    {header.column.getIsSorted() === 'asc' && <ChevronUp size={10} className="text-plasma" />}
-                    {header.column.getIsSorted() === 'desc' && <ChevronDown size={10} className="text-plasma" />}
-                  </button>
-                )}
+                    {header.isPlaceholder ? null : (
+                      <button
+                        onClick={header.column.getToggleSortingHandler()}
+                        className="flex items-center gap-1 text-xs font-mono tracking-widest text-white/30 hover:text-white/60 transition-colors w-full"
+                      >
+                        {flexRender(header.column.columnDef.header, header.getContext())}
+                        {header.column.getIsSorted() === 'asc' && <ChevronUp size={10} className="text-plasma" />}
+                        {header.column.getIsSorted() === 'desc' && <ChevronDown size={10} className="text-plasma" />}
+                      </button>
+                    )}
+                  </div>
+                ))}
               </div>
             ))}
           </div>
-        ))}
-      </div>
 
-      {/* Virtualized rows */}
-      <div ref={parentRef} className="flex-1 overflow-auto">
-        <div style={{ height: totalSize }}>
-          {paddingTop > 0 && <div style={{ height: paddingTop }} />}
-          {items.map(virtualRow => {
-            const row = rows[virtualRow.index];
-            const isSelected = selectedStock?.id === row.original.id;
-            const isHovered = hoveredRow === row.original.id;
+          {/* Virtualized rows */}
+          <div style={{ height: totalSize, position: 'relative' }}>
+            {paddingTop > 0 && <div style={{ height: paddingTop }} />}
+            {items.map(virtualRow => {
+              const row = rows[virtualRow.index];
+              const isSelected = selectedStock?.id === row.original.id;
+              const isHovered = hoveredRow === row.original.id;
             return (
               <div
                 key={row.id}
@@ -281,6 +282,7 @@ export default function StockTable() {
             );
           })}
           {paddingBottom > 0 && <div style={{ height: paddingBottom }} />}
+        </div>
         </div>
       </div>
 

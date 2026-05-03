@@ -144,7 +144,7 @@ export default function FilterPanel() {
   };
 
   return (
-    <aside className="w-72 flex-shrink-0 bg-obsidian/90 backdrop-blur-sm border-r border-white/5 overflow-y-auto flex flex-col">
+    <aside className="w-full lg:w-72 flex-shrink-0 bg-obsidian/90 backdrop-blur-sm border-r border-white/5 overflow-y-auto flex flex-col">
       {/* Header */}
       <div className="p-4 border-b border-white/5 bg-abyss/50">
         <div className="flex items-center justify-between mb-3">

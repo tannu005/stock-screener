@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 import { Stock, FilterCriteria, SortConfig } from '@/types/stock';
 import { generateStocks, applyFilters } from '@/lib/data/stockGenerator';
-import { fetchMarketData } from '@/lib/data/dataService';
+import { stockDataLoader } from '@/lib/data/stockDataLoader';
 
 interface ScreenerState {
   allStocks: Stock[];
@@ -64,16 +64,8 @@ export const useScreenerStore = create<ScreenerState>()(
     initialize: async () => {
       set({ isLoading: true });
 
-      let stocks: Stock[] = [];
-      if (get().dataMode === 'live') {
-        stocks = await fetchMarketData();
-        if (stocks.length === 0) {
-          console.warn('Live data failed, falling back to simulated.');
-          stocks = generateStocks(500);
-        }
-      } else {
-        stocks = generateStocks(500);
-      }
+      stockDataLoader.setMode(get().dataMode);
+      const stocks = await stockDataLoader.loadStocks(500);
 
       set({
         allStocks: stocks,
@@ -135,7 +127,7 @@ export const useScreenerStore = create<ScreenerState>()(
         });
 
         // Only re-filter/sort if there are active filters, otherwise just update ticker
-        const hasFilters = Object.keys(filters).length > 0;
+        const hasFilters = Object.values(filters).some(v => v !== undefined && v !== '');
 
         const newTickerUpdates: Record<string, { price: number; change: number }> = {};
         Object.entries(currentBuffer).forEach(([sym, p]) => {
