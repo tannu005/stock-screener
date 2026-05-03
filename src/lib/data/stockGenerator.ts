@@ -55,7 +55,7 @@ function generateSymbol(index: number): string {
   return symbol;
 }
 
-function generateCandleData(basePrice: number, days = 180): CandleData[] {
+function generateCandleData(basePrice: number, days = 30): CandleData[] {
   const candles: CandleData[] = [];
   let price = basePrice * rand(0.7, 1.3);
   const now = Date.now();
@@ -103,7 +103,7 @@ function computeRSI(candles: CandleData[], period = 14): number {
   return parseFloat((100 - 100 / (1 + rs)).toFixed(2));
 }
 
-export function generateStocks(count = 5000): Stock[] {
+export function generateStocks(count = 500): Stock[] {
   rng = 42; // Reset seed for determinism
   const stocks: Stock[] = [];
   const usedSymbols = new Set<string>();

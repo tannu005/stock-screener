@@ -69,10 +69,10 @@ export const useScreenerStore = create<ScreenerState>()(
         stocks = await fetchMarketData();
         if (stocks.length === 0) {
           console.warn('Live data failed, falling back to simulated.');
-          stocks = generateStocks(5000);
+          stocks = generateStocks(500);
         }
       } else {
-        stocks = generateStocks(5000);
+        stocks = generateStocks(500);
       }
 
       set({
@@ -134,30 +134,34 @@ export const useScreenerStore = create<ScreenerState>()(
           return { ...s, price: newPrice, change, changePct, lastUpdated: Date.now() };
         });
 
-        // Only re-filter if there are active filters
+        // Only re-filter/sort if there are active filters, otherwise just update ticker
         const hasFilters = Object.keys(filters).length > 0;
-        const filtered = hasFilters ? applyFilters(allStocks, filters) : allStocks;
-        const sorted = sortStocks(filtered, sort);
 
         const newTickerUpdates: Record<string, { price: number; change: number }> = {};
-        const updatedStocksMap = new Map(allStocks.map(s => [s.symbol, s]));
-        
         Object.entries(currentBuffer).forEach(([sym, p]) => {
-          const stock = updatedStocksMap.get(sym);
+          const stock = prevStocks.find(s => s.symbol === sym);
           if (stock) {
             newTickerUpdates[sym] = { price: p, change: p - stock.prevClose };
           }
         });
 
-        set(state => ({
-          allStocks,
-          filteredStocks: sorted,
-          tickerUpdates: {
-            ...state.tickerUpdates,
-            ...newTickerUpdates
-          }
-        }));
-      }, 800); // Increased interval for better UI stability
+        if (hasFilters) {
+          const filtered = applyFilters(allStocks, filters);
+          const sorted = sortStocks(filtered, sort);
+          set(state => ({
+            allStocks,
+            filteredStocks: sorted,
+            tickerUpdates: { ...state.tickerUpdates, ...newTickerUpdates }
+          }));
+        } else {
+          // Skip expensive sort — just update data in place
+          set(state => ({
+            allStocks,
+            filteredStocks: allStocks,
+            tickerUpdates: { ...state.tickerUpdates, ...newTickerUpdates }
+          }));
+        }
+      }, 2500);
     },
 
     toggleWatchlist: (symbol) => {

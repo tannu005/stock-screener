@@ -24,14 +24,16 @@ export default function ThreeBackground() {
   return (
     <div className="three-canvas" style={{ position: 'fixed', inset: 0, zIndex: 0 }}>
       <Canvas 
-        dpr={[1, 1.5]} 
+        dpr={[1, 1.2]} 
+        frameloop="demand"
         gl={{ 
-          antialias: true, 
+          antialias: false, 
           alpha: true,
-          powerPreference: "high-performance",
+          powerPreference: "low-power",
           stencil: false,
           depth: true
         }}
+        performance={{ min: 0.5 }}
       >
         <PerspectiveCamera makeDefault position={[0, 0, 15]} fov={50} />
         <ambientLight intensity={0.5} />
@@ -40,7 +42,7 @@ export default function ThreeBackground() {
         
         <group>
           <ProceduralGrid />
-          <Float speed={2} rotationIntensity={0.5} floatIntensity={0.5}>
+          <Float speed={1} rotationIntensity={0.3} floatIntensity={0.3}>
             <FinancialWaves />
           </Float>
           <SentimentParticles />

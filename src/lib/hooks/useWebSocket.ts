@@ -5,45 +5,47 @@ import { useScreenerStore } from '@/lib/store/screenerStore';
 
 export function useWebSocketSimulation() {
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
-  const { allStocks, updateStockPrice } = useScreenerStore();
+  const stocksRef = useRef(useScreenerStore.getState().allStocks);
 
-  const startSimulation = useCallback(() => {
-    if (!allStocks.length) return;
+  // Keep ref in sync without causing re-renders
+  useEffect(() => {
+    const unsub = useScreenerStore.subscribe(
+      (state) => { stocksRef.current = state.allStocks; }
+    );
+    return unsub;
+  }, []);
+
+  useEffect(() => {
+    const updateStockPrice = useScreenerStore.getState().updateStockPrice;
 
     intervalRef.current = setInterval(() => {
-      // Update 20 random stocks every 500ms
-      const count = Math.floor(Math.random() * 20) + 10;
+      const stocks = stocksRef.current;
+      if (!stocks.length) return;
+
+      // Update only 2-4 stocks every 3 seconds — gentle on the CPU
+      const count = Math.floor(Math.random() * 3) + 2;
       const indices = new Set<number>();
       while (indices.size < count) {
-        indices.add(Math.floor(Math.random() * allStocks.length));
+        indices.add(Math.floor(Math.random() * stocks.length));
       }
 
       indices.forEach(idx => {
-        const stock = allStocks[idx];
+        const stock = stocks[idx];
         if (!stock) return;
-        const volatility = 0.002 + Math.random() * 0.008;
+        const volatility = 0.002 + Math.random() * 0.005;
         const direction = Math.random() > 0.5 ? 1 : -1;
         const newPrice = parseFloat((stock.price * (1 + direction * volatility)).toFixed(2));
         updateStockPrice(stock.symbol, Math.max(0.01, newPrice));
       });
-    }, 500);
-  }, [allStocks, updateStockPrice]);
+    }, 3000);
 
-  const stopSimulation = useCallback(() => {
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-      intervalRef.current = null;
-    }
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    };
   }, []);
-
-  useEffect(() => {
-    if (allStocks.length > 0) {
-      startSimulation();
-    }
-    return () => stopSimulation();
-  }, [allStocks.length, startSimulation, stopSimulation]);
-
-  return { startSimulation, stopSimulation };
 }
 
 export function useFormatters() {

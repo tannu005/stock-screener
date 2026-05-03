@@ -130,7 +130,7 @@ export default function HomePage() {
                       <div className="text-3xl filter drop-shadow-lg group-hover:scale-110 transition-transform">🔄</div>
                     </div>
                     <h3 className="text-white text-xl font-bold mb-3">Live Ingestion</h3>
-                    <p className="text-white/60 text-sm leading-relaxed font-mono">Real-time market feeds from 5,000+ stocks with sub-200ms latency.</p>
+                    <p className="text-white/60 text-sm leading-relaxed font-mono">Real-time market feeds from 500+ stocks with sub-200ms latency.</p>
                   </div>
 
                   {/* Step 2 */}

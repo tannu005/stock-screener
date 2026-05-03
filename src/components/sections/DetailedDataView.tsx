@@ -38,7 +38,7 @@ export default function DetailedDataView() {
                                 Full Data Explorer
                             </h2>
                             <p className="text-white/60 text-sm mt-1 font-mono">
-                                {isExpanded ? 'REFINE SEARCH • 5,000+ STOCKS • REAL-TIME DATA' : 'Advanced filtering with 5,000+ stocks and sub-200ms response times'}
+                                {isExpanded ? 'REFINE SEARCH • 500+ STOCKS • REAL-TIME DATA' : 'Advanced filtering with 500+ stocks and sub-200ms response times'}
                             </p>
                         </div>
                         <div
