@@ -1,0 +1,72 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:7
+    container_name: stock-screener-mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password123
+      MONGO_INITDB_DATABASE: stock-screener
+    volumes:
+      - mongodb_data:/data/db
+    healthcheck:
+      test: [ "CMD", "mongosh", "--eval", "db.adminCommand('ping')" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    networks:
+      - stock-screener-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: stock-screener-backend
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      NODE_ENV: development
+      PORT: 5000
+      MONGODB_URI: mongodb://admin:password123@mongodb:27017/stock-screener?authSource=admin
+      JWT_SECRET: your_super_secret_jwt_key_change_in_production
+      CORS_ORIGIN: http://localhost:3000
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    volumes:
+      - ./backend/src:/app/src
+    command: npm run dev
+    networks:
+      - stock-screener-network
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: stock-screener-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:5000/api
+      NEXT_PUBLIC_DATA_MODE: simulated
+    depends_on:
+      - backend
+    volumes:
+      - ./src:/app/src
+    networks:
+      - stock-screener-network
+
+volumes:
+  mongodb_data:
+    driver: local
+
+networks:
+  stock-screener-network:
+    driver: bridge
