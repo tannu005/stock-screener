@@ -8,7 +8,7 @@
 
 | Resource | URL |
 |----------|-----|
-| **🌐 Live Website** | [https://stock-screener-pro.vercel.app](https://stock-screener-pro.vercel.app) |
+| **🌐 Live Website** | [https://stock-screener-lemon.vercel.app](https://stock-screener-lemon.vercel.app) |
 | **💻 GitHub Repository** | [https://github.com/tannu005/stock-screener](https://github.com/tannu005/stock-screener) |
 
 ---
@@ -158,7 +158,7 @@ Stock Screener Pro is not a toy project — it is a **deployed, data-driven, pro
 
 ---
 
-> **Live Website:** [https://stock-screener-pro.vercel.app](https://stock-screener-pro.vercel.app)
+> **Live Website:** [https://stock-screener-lemon.vercel.app](https://stock-screener-lemon.vercel.app)
 >
 > **GitHub:** [https://github.com/tannu005/stock-screener](https://github.com/tannu005/stock-screener)
 
