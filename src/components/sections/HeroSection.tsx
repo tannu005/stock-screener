@@ -12,7 +12,6 @@ export default function HeroSection() {
     const subtitleRef = useRef<HTMLParagraphElement>(null);
     const ctaRef = useRef<HTMLDivElement>(null);
     const layerRef = useRef<HTMLDivElement>(null);
-    const [isDemoOpen, setIsDemoOpen] = useState(false);
     const { setAuthModalOpen, user } = useScreenerStore();
     const router = useRouter();
 
@@ -57,21 +56,7 @@ export default function HeroSection() {
         };
     }, []);
 
-    useEffect(() => {
-        const onKeyDown = (event: KeyboardEvent) => {
-            if (event.key === 'Escape') {
-                setIsDemoOpen(false);
-            }
-        };
 
-        if (isDemoOpen) {
-            window.addEventListener('keydown', onKeyDown);
-        }
-
-        return () => {
-            window.removeEventListener('keydown', onKeyDown);
-        };
-    }, [isDemoOpen]);
 
     return (
         <PageTransition>
@@ -139,13 +124,7 @@ export default function HeroSection() {
                         >
                             {user ? 'Go to Dashboard' : 'Explore Live Data'}
                         </button>
-                        <button
-                            aria-label="Open interactive product walkthrough"
-                            onClick={() => setIsDemoOpen(true)}
-                            className="px-10 py-4 border-2 border-primary text-primary bg-primary/5 rounded-lg hover:bg-primary/20 transition-all duration-300 font-bold shadow-lg"
-                        >
-                            Watch Demo
-                        </button>
+
                     </div>
                 </div>
 
@@ -169,30 +148,7 @@ export default function HeroSection() {
                     </div>
                 </div>
 
-                {isDemoOpen && (
-                    <div
-                        className="fixed inset-0 z-[120] bg-black/60 backdrop-blur-md px-4 py-6 flex items-center justify-center"
-                        role="dialog"
-                        aria-modal="true"
-                        aria-label="Interactive product walkthrough"
-                    >
-                        <div className="relative w-full max-w-5xl rounded-2xl border border-primary/30 bg-dark-light/90 shadow-2xl hero-modal-3d">
-                            <button
-                                className="absolute right-4 top-4 z-10 px-3 py-1 rounded-md border border-white/20 text-white/80 hover:text-white hover:bg-white/10"
-                                aria-label="Close walkthrough modal"
-                                onClick={() => setIsDemoOpen(false)}
-                            >
-                                Close
-                            </button>
-                            <iframe
-                                title="Stock Screener Pro Walkthrough"
-                                src="https://www.youtube.com/embed/5qap5aO4i9A?autoplay=1&mute=1"
-                                className="w-full h-[65vh] rounded-2xl"
-                                allow="autoplay; encrypted-media; picture-in-picture"
-                            />
-                        </div>
-                    </div>
-                )}
+
             </section>
         </PageTransition>
     );
