@@ -29,28 +29,16 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
     setLoading(true);
 
     try {
-      const endpoint = mode === 'signin' ? `${API_URL}/auth/signin` : `${API_URL}/auth/signup`;
-      const payload = mode === 'signin'
-        ? { email: formData.email, password: formData.password }
-        : { email: formData.email, password: formData.password, name: formData.name };
+      // For demo purposes, we mock the authentication since the Express backend isn't running on Vercel
+      await new Promise(resolve => setTimeout(resolve, 800));
+      
+      const mockName = mode === 'signin' ? formData.email.split('@')[0] : formData.name;
 
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || 'Authentication failed');
-      }
-
-      const data = await response.json();
       setLoading(false);
       setSuccess(true);
 
-      // Store token and user info
-      login(data.user.name, data.user.email, data.token);
+      // Store mock token and user info
+      login(mockName || 'Trader', formData.email, 'mock_jwt_token_for_demo');
 
       setTimeout(() => {
         setSuccess(false);
@@ -59,7 +47,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
         router.push('/dashboard');
       }, 1500);
     } catch (err: any) {
-      setError(err.message);
+      setError(err.message || 'Authentication failed');
       setLoading(false);
     }
   };
