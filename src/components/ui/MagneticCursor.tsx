@@ -93,12 +93,12 @@ export default function MagneticCursor() {
     <>
       <div
         ref={cursorRef}
-        className="fixed top-0 left-0 w-4 h-4 bg-primary rounded-full pointer-events-none z-[9999] mix-blend-difference"
+        className="fixed top-0 left-0 w-4 h-4 bg-primary rounded-full pointer-events-none z-[9999]"
         style={{ transform: 'translate(-50%, -50%)' }}
       />
       <div
         ref={followerRef}
-        className="fixed top-0 left-0 w-8 h-8 border border-primary rounded-full pointer-events-none z-[9998] mix-blend-difference"
+        className="fixed top-0 left-0 w-8 h-8 border border-primary rounded-full pointer-events-none z-[9998]"
         style={{ transform: 'translate(-50%, -50%)' }}
       />
     </>

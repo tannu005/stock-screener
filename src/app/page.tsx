@@ -15,6 +15,7 @@ import TrustSignalsSection from '@/components/sections/TrustSignalsSection';
 import FloatingNavbar from '@/components/ui/FloatingNavbar';
 import AuthModal from '@/components/ui/AuthModal';
 import PricingSection from '@/components/sections/PricingSection';
+import ThreeChartSection from '@/components/sections/ThreeChartSection';
 import ThreeBackground from '@/components/background/ThreeBackground';
 import MagneticCursor from '@/components/ui/MagneticCursor';
 
@@ -99,6 +100,10 @@ export default function HomePage() {
 
             <section className="content-section" data-cursor-theme="portfolio">
               <DetailedDataView />
+            </section>
+
+            <section className="content-section" data-cursor-theme="finance">
+              <ThreeChartSection />
             </section>
 
             <section className="content-section" data-cursor-theme="finance">

@@ -24,8 +24,8 @@ export default function ThreeBackground() {
   return (
     <div className="three-canvas" style={{ position: 'fixed', inset: 0, zIndex: 0 }}>
       <Canvas 
-        dpr={[1, 1.2]} 
-        frameloop="demand"
+        dpr={[1, 1]} 
+        frameloop="always"
         gl={{ 
           antialias: false, 
           alpha: true,
@@ -42,9 +42,6 @@ export default function ThreeBackground() {
         
         <group>
           <ProceduralGrid />
-          <Float speed={1} rotationIntensity={0.3} floatIntensity={0.3}>
-            <FinancialWaves />
-          </Float>
           <SentimentParticles />
         </group>
         
