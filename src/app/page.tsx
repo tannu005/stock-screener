@@ -15,8 +15,8 @@ import TrustSignalsSection from '@/components/sections/TrustSignalsSection';
 import FloatingNavbar from '@/components/ui/FloatingNavbar';
 import AuthModal from '@/components/ui/AuthModal';
 import PricingSection from '@/components/sections/PricingSection';
-// WebGL components removed to fix lag and layout thrashing
-// MagneticCursor removed to fix layout thrashing & lag
+import ThreeBackground from '@/components/background/ThreeBackground';
+import MagneticCursor from '@/components/ui/MagneticCursor';
 
 function AppContent() {
   useWebSocketSimulation();
@@ -64,6 +64,8 @@ export default function HomePage() {
 
   return (
     <>
+      <ThreeBackground />
+      <MagneticCursor />
       <FloatingNavbar />
 
       {!showApp && <LoadingScreen progress={loadProgress} />}
